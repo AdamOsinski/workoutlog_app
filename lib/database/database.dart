@@ -1,0 +1,42 @@
+import 'dart:io';
+
+import 'package:drift/drift.dart';
+import 'package:drift/native.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+
+import 'tables/exercises.dart';
+import 'tables/workouts.dart';
+import 'tables/workout_exercises.dart';
+import 'tables/workout_sessions.dart';
+import 'tables/set_results.dart';
+import 'tables/bodyweight.dart';
+
+part 'database.g.dart';
+
+@DriftDatabase(
+  tables: [
+    Exercises,
+    Workouts,
+    WorkoutExercises,
+    WorkoutSessions,
+    SetResults,
+    Bodyweight
+  ],
+)
+
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(NativeDatabase.memory());
+
+  @override
+  int get schemaVersion => 1; // Increment this number whenever you change the database schema
+}
+
+LazyDatabase _openConnection() {
+  return LazyDatabase(() async {
+    final dbFolder = await getApplicationDocumentsDirectory();
+    final file = File(
+      p.join(dbFolder.path, 'workoutlog.sqlite'));
+    return NativeDatabase.createInBackground(file);
+  });
+}
