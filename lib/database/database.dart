@@ -26,7 +26,8 @@ part 'database.g.dart';
 )
 
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase([QueryExecutor? executor])
+   : super(executor ?? _openConnection()); // allows for in-memory database for testing
 
   @override
   int get schemaVersion => 1; // Increment this number whenever you change the database schema
