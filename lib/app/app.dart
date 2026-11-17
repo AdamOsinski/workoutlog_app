@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../database/database.dart';
 import '../repositories/exercise_repository.dart';
 import '../repositories/workout_repository.dart';
-import '../screens/workouts/workout_list_screen.dart';
+import '../screens/home/home_screen.dart';
 import 'theme.dart';
 
 class WorkoutLogApp extends StatelessWidget {
@@ -23,8 +23,8 @@ class WorkoutLogApp extends StatelessWidget {
       title: 'Workout App',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: WorkoutListScreen(
-        repository: workoutRepository,
+      home: HomeScreen(
+        workoutRepository : workoutRepository,
       ),
     );
   }
