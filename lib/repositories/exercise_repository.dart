@@ -11,10 +11,7 @@ class ExerciseRepository {
     return database.select(database.exercises).get();
   }
 
-  Future<int> addExercise({
-    required String name,
-    required String resistanceType,
-  }) {
+  Future<int> addExercise({required String name, required String resistanceType,}) {
     return database.into(database.exercises).insert(
       ExercisesCompanion.insert(
         name: name,
@@ -23,10 +20,7 @@ class ExerciseRepository {
     );
   }
 
-  Future<int> renameExercise({
-    required int id,
-    required String newName,
-  }) async{
+  Future<int> renameExercise({ required int id, required String newName,}) async{
     final query = database.update(database.exercises)
     ..where((tbl) => tbl.id.equals(id));
 

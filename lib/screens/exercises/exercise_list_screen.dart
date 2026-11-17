@@ -1,10 +1,11 @@
+
 import 'package:flutter/material.dart';
 
 import '../../repositories/exercise_repository.dart';
-import 'create_exercrise_screen.dart';
+import 'create_exercise_screen.dart';
 
 class ExerciseListScreen extends StatefulWidget {
-  final ExerciseRepository repository; // access to the exercise repository for fetching exercises from the database
+  final ExerciseRepository repository;
 
   const ExerciseListScreen({
     super.key,
@@ -13,13 +14,68 @@ class ExerciseListScreen extends StatefulWidget {
 
   @override
   State<ExerciseListScreen> createState() =>
-  _ExerciseListScreenState();
+      _ExerciseListScreenState();
 }
 
-class _ExerciseListScreenState extends State<ExerciseListScreen> {
+class _ExerciseListScreenState
+    extends State<ExerciseListScreen> {
+
+  Future<void> _renameExercise(
+  int id,
+  String currentName,
+) async {
+  final newName = await showDialog<String>(
+    context: context,
+    builder: (dialogContext) {
+      final controller =
+          TextEditingController(text: currentName);
+
+      return AlertDialog(
+        title: const Text('Rename Exercise'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Exercise name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(
+                dialogContext,
+                controller.text.trim(),
+              );
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (!mounted) return;
+
+  if (newName != null && newName.isNotEmpty) {
+    await widget.repository.renameExercise(
+      id: id,
+      newName: newName,
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+}
 
   @override
-  Widget build(BuildContext context) { // Builds the widget tree for the exercise list screen
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Exercises'),
@@ -28,7 +84,8 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
       body: FutureBuilder(
         future: widget.repository.getAllExercises(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -56,6 +113,15 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
               return ListTile(
                 title: Text(exercise.name),
                 subtitle: Text(exercise.resistanceType),
+                trailing: IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    _renameExercise(
+                      exercise.id,
+                      exercise.name,
+                    );
+                  },
+                ),
               );
             },
           );
@@ -74,7 +140,7 @@ class _ExerciseListScreenState extends State<ExerciseListScreen> {
           );
 
           if (result == true && context.mounted) {
-            setState(() {}); // Refresh the list after returning from the create exercise screen
+            setState(() {});
           }
         },
         child: const Icon(Icons.add),
