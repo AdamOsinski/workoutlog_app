@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../repositories/workout_repository.dart';
+import 'workout_details_screen.dart';
 
 class WorkoutListScreen extends StatefulWidget {
   final WorkoutRepository repository;
@@ -112,6 +113,22 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
 
               return ListTile(
                 title: Text(workout.name),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => WorkoutDetailsScreen(
+                        workout: workout,
+                        repository: widget.repository,
+                      ),
+                    ),
+                  ).then((_) {
+                    if (mounted) {
+                      setState(() {});
+                    }
+                  });
+                },
               );
             },
           );
