@@ -26,7 +26,7 @@ part 'database.g.dart';
 )
 
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(NativeDatabase.memory());
+  AppDatabase() : super(_openConnection());
 
   @override
   int get schemaVersion => 1; // Increment this number whenever you change the database schema
