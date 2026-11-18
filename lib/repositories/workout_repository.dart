@@ -105,4 +105,33 @@ class WorkoutRepository {
     });
   }
 
+
+  // Delete a workout only if it has no training history.
+  Future<bool> deleteWorkout(int workoutId) async {
+    final sessions = await (database.select(database.workoutSessions)
+          ..where((table) => table.workoutId.equals(workoutId)))
+        .get();
+
+    if (sessions.isNotEmpty) {
+      return false;
+    }
+
+    await database.transaction(() async {
+      await (database.delete(database.workoutExercises)
+            ..where((table) => table.workoutId.equals(workoutId)))
+          .go();
+
+      await (database.delete(database.workoutDays)
+            ..where((table) => table.workoutId.equals(workoutId)))
+          .go();
+
+      await (database.delete(database.workouts)
+            ..where((table) => table.id.equals(workoutId)))
+          .go();
+    });
+
+    return true;
+  }
+
+
 }
