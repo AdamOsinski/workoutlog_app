@@ -3,14 +3,17 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../repositories/workout_repository.dart';
 import '../workouts/workout_list_screen.dart';
+import '../../repositories/exercise_repository.dart';
 
 class HomeScreen extends StatefulWidget {
   final WorkoutRepository workoutRepository;
+  final ExerciseRepository exerciseRepository;
 
   const HomeScreen({
-    super.key,
-    required this.workoutRepository,
-  });
+  super.key,
+  required this.workoutRepository,
+  required this.exerciseRepository,
+});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -56,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final pages = [
       WorkoutListScreen(
         repository: widget.workoutRepository,
+        exerciseRepository: widget.exerciseRepository,
       ),
       const _PlaceholderScreen(
         title: 'Log',

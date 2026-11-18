@@ -24,8 +24,9 @@ class WorkoutLogApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: HomeScreen(
-        workoutRepository : workoutRepository,
-      ),
+      workoutRepository: workoutRepository,
+      exerciseRepository: exerciseRepository,
+    ),
     );
   }
 }

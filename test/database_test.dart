@@ -3,7 +3,7 @@ import 'package:drift/native.dart';
 
 import 'package:workoutlog_app/database/database.dart';
 
-void main(){
+void main() {
   test('Can insert and retrieve an exercise', () async {
     final db = AppDatabase(NativeDatabase.memory());
 
@@ -12,7 +12,8 @@ void main(){
       ExercisesCompanion.insert(
         name: 'Bench Press',
         resistanceType: 'BARBELL',
-      )
+        bodypart: 'Chest',
+      ),
     );
 
     // Retrieve the exercise
@@ -22,7 +23,8 @@ void main(){
     expect(exercises.length, 1);
     expect(exercises.first.name, 'Bench Press');
     expect(exercises.first.resistanceType, 'BARBELL');
+    expect(exercises.first.bodypart, 'Chest');
 
-    await db.close(); // Close the database after the test
+    await db.close();
   });
 }

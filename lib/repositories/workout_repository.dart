@@ -1,3 +1,4 @@
+
 import 'package:drift/drift.dart';
 
 import '../database/database.dart';
@@ -38,7 +39,22 @@ class WorkoutRepository {
         .get();
   }
 
-  // Add an existing exercise to a workout.
+  // Get all planned sets for a workout exercise.
+  Future<List<WorkoutExerciseSet>> getWorkoutExerciseSets(
+    int workoutExerciseId,
+  ) {
+    return (database.select(database.workoutExerciseSets)
+          ..where(
+            (table) =>
+                table.workoutExerciseId.equals(workoutExerciseId),
+          )
+          ..orderBy([
+            (table) => OrderingTerm.asc(table.setNumber),
+          ]))
+        .get();
+  }
+
+  // Add an exercise and create its initial planned sets.
   Future<int> addExerciseToWorkout({
     required int workoutId,
     required int exerciseId,
@@ -49,16 +65,33 @@ class WorkoutRepository {
     final existingExercises =
         await getWorkoutExercises(workoutId);
 
-    return database.into(database.workoutExercises).insert(
-      WorkoutExercisesCompanion.insert(
-        workoutId: workoutId,
-        exerciseId: exerciseId,
-        exerciseNumber: existingExercises.length + 1,
-        targetSets: targetSets,
-        targetReps: targetReps,
-        targetRest: targetRest,
-      ),
-    );
+    return database.transaction(() async {
+      final workoutExerciseId =
+          await database.into(database.workoutExercises).insert(
+        WorkoutExercisesCompanion.insert(
+          workoutId: workoutId,
+          exerciseId: exerciseId,
+          exerciseNumber: existingExercises.length + 1,
+          targetRest: targetRest,
+        ),
+      );
+
+      await database.batch((batch) {
+        batch.insertAll(
+          database.workoutExerciseSets,
+          List.generate(targetSets, (index) {
+            return WorkoutExerciseSetsCompanion.insert(
+              workoutExerciseId: workoutExerciseId,
+              setNumber: index + 1,
+              repMin: targetReps,
+              repMax: targetReps,
+            );
+          }),
+        );
+      });
+
+      return workoutExerciseId;
+    });
   }
 
   // Get the scheduled weekdays for a workout.
@@ -105,7 +138,6 @@ class WorkoutRepository {
     });
   }
 
-
   // Delete a workout only if it has no training history.
   Future<bool> deleteWorkout(int workoutId) async {
     final sessions = await (database.select(database.workoutSessions)
@@ -117,6 +149,16 @@ class WorkoutRepository {
     }
 
     await database.transaction(() async {
+      final exercises = await getWorkoutExercises(workoutId);
+
+      for (final exercise in exercises) {
+        await (database.delete(database.workoutExerciseSets)
+              ..where(
+                (table) => table.workoutExerciseId.equals(exercise.id),
+              ))
+            .go();
+      }
+
       await (database.delete(database.workoutExercises)
             ..where((table) => table.workoutId.equals(workoutId)))
           .go();
@@ -132,6 +174,4 @@ class WorkoutRepository {
 
     return true;
   }
-
-
 }

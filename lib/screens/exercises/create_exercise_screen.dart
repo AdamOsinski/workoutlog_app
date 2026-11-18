@@ -1,3 +1,4 @@
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../models/resistance_type.dart';
@@ -8,22 +9,26 @@ class CreateExerciseScreen extends StatefulWidget {
 
   const CreateExerciseScreen({
     super.key,
-    required this.repository
+    required this.repository,
   });
 
   @override
   State<CreateExerciseScreen> createState() =>
-  _CreateExerciseScreenState();
+      _CreateExerciseScreenState();
 }
 
 class _CreateExerciseScreenState extends State<CreateExerciseScreen> {
   final _nameController = TextEditingController();
+  final _bodypartController = TextEditingController();
+  final _baseResistanceController = TextEditingController();
 
   ResistanceType _selectedType = ResistanceType.bodyweight;
 
   @override
   void dispose() {
     _nameController.dispose();
+    _bodypartController.dispose();
+    _baseResistanceController.dispose();
     super.dispose();
   }
 
@@ -33,19 +38,41 @@ class _CreateExerciseScreenState extends State<CreateExerciseScreen> {
 
   Future<void> _saveExercise() async {
     final name = _nameController.text.trim();
+    final bodypart = _bodypartController.text.trim();
+    final resistanceText = _baseResistanceController.text.trim();
 
-    if (name.isEmpty) {
+    if (name.isEmpty || bodypart.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter an exercise name and bodypart.'),
+        ),
+      );
       return;
     }
 
-    await widget.repository.addExercise(
+    final baseResistance = resistanceText.isEmpty
+        ? null
+        : double.tryParse(resistanceText);
+
+    if (resistanceText.isNotEmpty && baseResistance == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid resistance in kg.'),
+        ),
+      );
+      return;
+    }
+
+    final exerciseId = await widget.repository.addExercise(
       name: name,
       resistanceType: _typeToString(_selectedType),
+      bodypart: bodypart,
+      baseResistance: baseResistance,
     );
 
     if (!mounted) return;
 
-    Navigator.pop(context, true);
+    Navigator.pop(context, exerciseId);
   }
 
   @override
@@ -63,9 +90,15 @@ class _CreateExerciseScreenState extends State<CreateExerciseScreen> {
                 border: OutlineInputBorder(),
               ),
             ),
-
             const SizedBox(height: 16),
-
+            TextField(
+              controller: _bodypartController,
+              decoration: const InputDecoration(
+                labelText: 'Bodypart',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
             DropdownButtonFormField<ResistanceType>(
               initialValue: _selectedType,
               decoration: const InputDecoration(
@@ -73,7 +106,10 @@ class _CreateExerciseScreenState extends State<CreateExerciseScreen> {
                 border: OutlineInputBorder(),
               ),
               items: ResistanceType.values.map((type) {
-                return DropdownMenuItem(value: type, child: Text(type.name));
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type.name),
+                );
               }).toList(),
               onChanged: (value) {
                 if (value != null) {
@@ -83,9 +119,20 @@ class _CreateExerciseScreenState extends State<CreateExerciseScreen> {
                 }
               },
             ),
-
-            const SizedBox(height: 24),
-
+            const SizedBox(height: 16),
+            if (_selectedType != ResistanceType.bodyweight)
+              TextField(
+                controller: _baseResistanceController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Base resistance (kg)',
+                  hintText: 'e.g. 20',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            const Spacer(),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

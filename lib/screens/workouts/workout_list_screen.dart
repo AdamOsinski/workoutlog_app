@@ -4,13 +4,16 @@ import 'package:material_ui/material_ui.dart';
 import '../../repositories/workout_repository.dart';
 import '../../widgets/workout_card.dart';
 import 'workout_details_screen.dart';
+import '../../repositories/exercise_repository.dart';
 
 class WorkoutListScreen extends StatefulWidget {
   final WorkoutRepository repository;
+  final ExerciseRepository exerciseRepository;
 
   const WorkoutListScreen({
     super.key,
     required this.repository,
+    required this.exerciseRepository,
   });
 
   @override
@@ -31,6 +34,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
     _workoutsFuture = _loadWorkoutCards();
   }
 
+  
   Future<List<_WorkoutCardData>> _loadWorkoutCards() async {
     final workouts = await widget.repository.getAllWorkouts();
     final exercises = await widget.repository.getAllExercises();
@@ -44,18 +48,27 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
       final scheduledDays =
           await widget.repository.getWorkoutDays(workout.id);
 
-      final cardExercises = workoutExercises.map((item) {
+      final cardExercises = <WorkoutExerciseItem>[];
+
+      for (final item in workoutExercises) {
         final exercise = exercises.firstWhere(
           (exercise) => exercise.id == item.exerciseId,
         );
 
-        return WorkoutExerciseItem(
-          name: exercise.name,
-          sets: item.targetSets,
-          reps: item.targetReps,
-          rest: item.targetRest,
+        final plannedSets =
+            await widget.repository.getWorkoutExerciseSets(item.id);
+
+        cardExercises.add(
+          WorkoutExerciseItem(
+            name: exercise.name,
+            sets: plannedSets.length,
+            reps: plannedSets.isEmpty
+                ? 0
+                : plannedSets.first.repMin,
+            rest: item.targetRest,
+          ),
         );
-      }).toList();
+      }
 
       result.add(
         _WorkoutCardData(
@@ -69,6 +82,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
 
     return result;
   }
+
 
   Future<void> _createWorkout() async {
     final formKey = GlobalKey<FormState>();
@@ -141,6 +155,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
         builder: (context) => WorkoutDetailsScreen(
           workout: workout,
           repository: widget.repository,
+          exerciseRepository: widget.exerciseRepository,
         ),
       ),
     );
