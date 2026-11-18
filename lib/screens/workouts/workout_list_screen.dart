@@ -81,7 +81,7 @@ class _WorkoutListScreenState extends State<WorkoutListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Workouts'),
+        title: const Text('WorkoutLog'),
       ),
       body: FutureBuilder(
         future: widget.repository.getAllWorkouts(),
