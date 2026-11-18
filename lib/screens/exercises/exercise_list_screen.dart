@@ -1,5 +1,5 @@
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../repositories/exercise_repository.dart';
 import 'create_exercise_screen.dart';

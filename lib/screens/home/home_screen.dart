@@ -1,5 +1,5 @@
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../repositories/workout_repository.dart';
 import '../workouts/workout_list_screen.dart';

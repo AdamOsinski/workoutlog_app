@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../models/resistance_type.dart';
 import '../../repositories/exercise_repository.dart';
@@ -67,7 +67,7 @@ class _CreateExerciseScreenState extends State<CreateExerciseScreen> {
             const SizedBox(height: 16),
 
             DropdownButtonFormField<ResistanceType>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: const InputDecoration(
                 labelText: 'Resistance type',
                 border: OutlineInputBorder(),

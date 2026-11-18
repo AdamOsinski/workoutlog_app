@@ -11,6 +11,7 @@ import 'tables/workout_exercises.dart';
 import 'tables/workout_sessions.dart';
 import 'tables/set_results.dart';
 import 'tables/bodyweight.dart';
+import 'tables/workout_days.dart';
 
 part 'database.g.dart';
 
@@ -21,7 +22,8 @@ part 'database.g.dart';
     WorkoutExercises,
     WorkoutSessions,
     SetResults,
-    Bodyweight
+    Bodyweight,
+    WorkoutDays
   ],
 )
 
@@ -30,7 +32,19 @@ class AppDatabase extends _$AppDatabase {
    : super(executor ?? _openConnection()); // allows for in-memory database for testing
 
   @override
-  int get schemaVersion => 1; // Increment this number whenever you change the database schema
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(workoutDays);
+      }
+    },
+  );
+
+  @override
+  int get schemaVersion => 2; // Increment this number whenever you change the database schema
 }
 
 LazyDatabase _openConnection() {

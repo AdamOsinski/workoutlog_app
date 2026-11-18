@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../database/database.dart';
 import '../../repositories/workout_repository.dart';
@@ -52,7 +52,7 @@ class _WorkoutDetailsScreenState
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<int>(
-                      value: selectedExerciseId,
+                      initialValue: selectedExerciseId,
                       decoration: const InputDecoration(
                         labelText: 'Exercise',
                       ),

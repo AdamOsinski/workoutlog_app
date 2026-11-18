@@ -60,4 +60,49 @@ class WorkoutRepository {
       ),
     );
   }
+
+  // Get the scheduled weekdays for a workout.
+  Future<List<int>> getWorkoutDays(int workoutId) async {
+    final rows = await (database.select(database.workoutDays)
+          ..where((table) => table.workoutId.equals(workoutId))
+          ..orderBy([
+            (table) => OrderingTerm.asc(table.weekday),
+          ]))
+        .get();
+
+    return rows.map((row) => row.weekday).toList();
+  }
+
+  // Replace the weekday schedule for a workout.
+  Future<void> setWorkoutDays({
+    required int workoutId,
+    required List<int> weekdays,
+  }) async {
+    if (weekdays.any((day) => day < 1 || day > 7)) {
+      throw ArgumentError('Weekdays must be between 1 and 7.');
+    }
+
+    final uniqueDays = weekdays.toSet().toList();
+
+    await database.transaction(() async {
+      await (database.delete(database.workoutDays)
+            ..where((table) => table.workoutId.equals(workoutId)))
+          .go();
+
+      if (uniqueDays.isNotEmpty) {
+        await database.batch((batch) {
+          batch.insertAll(
+            database.workoutDays,
+            uniqueDays.map((day) {
+              return WorkoutDaysCompanion.insert(
+                workoutId: workoutId,
+                weekday: day,
+              );
+            }).toList(),
+          );
+        });
+      }
+    });
+  }
+
 }
